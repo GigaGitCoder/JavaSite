@@ -14,8 +14,11 @@ import org.springframework.web.client.RestTemplate;
 @CrossOrigin(origins = "*")
 public class AuthProxyController {
 
-    private static final String AUTH_API_URL = "http://localhost:8092/api/auth";
-    private static final String USERS_API_URL = "http://localhost:8092/api/users";
+    private static final String AUTH_API_URL = "http://user-service:8092/api/auth";
+    private static final String ADMIN_API_URL = "http://user-service:8092/api/admin";
+
+    // И в методах:
+    String url = ADMIN_API_URL + "/getAll";
     private final RestTemplate restTemplate = new RestTemplate();
 
 
@@ -103,234 +106,12 @@ public class AuthProxyController {
         }
     }
 
-
-
-
-    @GetMapping("/users")
-    public ResponseEntity<String> getAllUsers(@RequestHeader(value = "Authorization", required = false) String authHeader) {
-        try {
-            String url = USERS_API_URL + "/getAll";
-            System.out.println("GET all users: " + url);
-
-            HttpHeaders headers = new HttpHeaders();
-            if (authHeader != null) {
-                headers.set("Authorization", authHeader);
-            }
-
-            HttpEntity<String> request = new HttpEntity<>(headers);
-
-            ResponseEntity<String> response = restTemplate.exchange(
-                    url,
-                    HttpMethod.GET,
-                    request,
-                    String.class
-            );
-
-            return ResponseEntity.ok()
-                    .header("Content-Type", "application/json; charset=UTF-8")
-                    .body(response.getBody());
-
-        } catch (Exception e) {
-            System.err.println("Ошибка GET all users: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("{\"error\": \"" + e.getMessage() + "\"}");
-        }
-    }
-
-
-    @GetMapping("/users/{id}")
-    public ResponseEntity<String> getUserById(
-            @PathVariable Long id,
-            @RequestHeader(value = "Authorization", required = false) String authHeader) {
-        try {
-            String url = USERS_API_URL + "/getById/" + id;
-            System.out.println("GET user by ID: " + url);
-
-            HttpHeaders headers = new HttpHeaders();
-            if (authHeader != null) {
-                headers.set("Authorization", authHeader);
-            }
-
-            HttpEntity<String> request = new HttpEntity<>(headers);
-
-            ResponseEntity<String> response = restTemplate.exchange(
-                    url,
-                    HttpMethod.GET,
-                    request,
-                    String.class
-            );
-
-            return ResponseEntity.ok()
-                    .header("Content-Type", "application/json; charset=UTF-8")
-                    .body(response.getBody());
-
-        } catch (Exception e) {
-            System.err.println("Ошибка GET user by ID: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("{\"error\": \"Пользователь не найден\"}");
-        }
-    }
-
-
-    @GetMapping("/users/me")
-    public ResponseEntity<String> getCurrentUser(@RequestHeader("Authorization") String authHeader) {
-        try {
-            String url = USERS_API_URL + "/me";
-            System.out.println("GET current user: " + url);
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", authHeader);
-
-            HttpEntity<String> request = new HttpEntity<>(headers);
-
-            ResponseEntity<String> response = restTemplate.exchange(
-                    url,
-                    HttpMethod.GET,
-                    request,
-                    String.class
-            );
-
-            return ResponseEntity.ok()
-                    .header("Content-Type", "application/json; charset=UTF-8")
-                    .body(response.getBody());
-
-        } catch (Exception e) {
-            System.err.println("Ошибка GET current user: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("{\"error\": \"Не авторизован\"}");
-        }
-    }
-
-
-    @PutMapping("/users/{id}")
-    public ResponseEntity<String> updateUser(
-            @PathVariable Long id,
-            @RequestBody String userJson,
-            @RequestHeader("Authorization") String authHeader) {
-        try {
-            String url = USERS_API_URL + "/update/" + id;
-            System.out.println("PUT update user: " + url);
-            System.out.println("Body: " + userJson);
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("Authorization", authHeader);
-
-            HttpEntity<String> request = new HttpEntity<>(userJson, headers);
-
-            ResponseEntity<String> response = restTemplate.exchange(
-                    url,
-                    HttpMethod.PUT,
-                    request,
-                    String.class
-            );
-
-            return ResponseEntity.ok()
-                    .header("Content-Type", "application/json; charset=UTF-8")
-                    .body(response.getBody());
-
-        } catch (Exception e) {
-            System.err.println("Ошибка PUT update user: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("{\"error\": \"Ошибка обновления пользователя\"}");
-        }
-    }
-
-
-    @DeleteMapping("/users/{id}")
-    public ResponseEntity<String> deleteUser(
-            @PathVariable Long id,
-            @RequestHeader("Authorization") String authHeader) {
-        try {
-            String url = USERS_API_URL + "/delete/" + id;
-            System.out.println("DELETE user: " + url);
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", authHeader);
-
-            HttpEntity<String> request = new HttpEntity<>(headers);
-
-            restTemplate.exchange(
-                    url,
-                    HttpMethod.DELETE,
-                    request,
-                    String.class
-            );
-
-            return ResponseEntity.ok()
-                    .body("{\"message\": \"Пользователь успешно удалён\"}");
-
-        } catch (Exception e) {
-            System.err.println("Ошибка DELETE user: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("{\"error\": \"Ошибка удаления пользователя\"}");
-        }
-    }
-
-
-    @GetMapping("/users/search")
-    public ResponseEntity<String> searchUsers(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String email,
-            @RequestParam(required = false) String role,
-            @RequestHeader(value = "Authorization", required = false) String authHeader) {
-
-        try {
-            StringBuilder urlBuilder = new StringBuilder(USERS_API_URL + "/search?");
-
-            if (name != null && !name.isEmpty()) {
-                urlBuilder.append("name=").append(name).append("&");
-            }
-            if (email != null && !email.isEmpty()) {
-                urlBuilder.append("email=").append(email).append("&");
-            }
-            if (role != null && !role.isEmpty()) {
-                urlBuilder.append("role=").append(role).append("&");
-            }
-
-            String url = urlBuilder.toString();
-
-            // Убираем последний '&' или '?' если нет параметров
-            if (url.endsWith("&")) {
-                url = url.substring(0, url.length() - 1);
-            }
-            if (url.endsWith("?")) {
-                url = url.substring(0, url.length() - 1);
-            }
-
-            System.out.println("GET search users: " + url);
-
-            HttpHeaders headers = new HttpHeaders();
-            if (authHeader != null) {
-                headers.set("Authorization", authHeader);
-            }
-
-            HttpEntity<String> request = new HttpEntity<>(headers);
-
-            ResponseEntity<String> response = restTemplate.exchange(
-                    url,
-                    HttpMethod.GET,
-                    request,
-                    String.class
-            );
-
-            return ResponseEntity.ok()
-                    .header("Content-Type", "application/json; charset=UTF-8")
-                    .body(response.getBody());
-
-        } catch (Exception e) {
-            System.err.println("Ошибка SEARCH users: " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("{\"error\": \"Ошибка поиска пользователей: " + e.getMessage() + "\"}");
-        }
-    }
     // Методы админов
 
     @GetMapping("/admin/users")
     public ResponseEntity<String> getAllUsersAdmin(@RequestHeader("Authorization") String authHeader) {
         try {
-            String url = "http://26.111.116.51:8092/api/admin/getAll";
+            String url = ADMIN_API_URL + "/getAll";
             System.out.println("GET admin all users: " + url);
 
             HttpHeaders headers = new HttpHeaders();
@@ -356,7 +137,7 @@ public class AuthProxyController {
             @PathVariable Long id,
             @RequestHeader("Authorization") String authHeader) {
         try {
-            String url = "http://26.111.116.51:8092/api/admin/getById/" + id;
+            String url = ADMIN_API_URL + "/getById/" + id;
             System.out.println("GET admin user by ID: " + url);
 
             HttpHeaders headers = new HttpHeaders();
@@ -382,7 +163,7 @@ public class AuthProxyController {
             @PathVariable String email,
             @RequestHeader("Authorization") String authHeader) {
         try {
-            String url = "http://26.111.116.51:8092/api/admin/getByEmail/" + email;
+            String url = ADMIN_API_URL + "/getByEmail/" + email;
             System.out.println("GET admin user by email: " + url);
 
             HttpHeaders headers = new HttpHeaders();
@@ -408,7 +189,7 @@ public class AuthProxyController {
             @PathVariable String name,
             @RequestHeader("Authorization") String authHeader) {
         try {
-            String url = "http://26.111.116.51:8092/api/admin/getByName/" + name;
+            String url = ADMIN_API_URL + "/getByName/" + name;
             System.out.println("GET admin user by name: " + url);
 
             HttpHeaders headers = new HttpHeaders();
@@ -437,7 +218,7 @@ public class AuthProxyController {
             @RequestHeader("Authorization") String authHeader) {
 
         try {
-            StringBuilder urlBuilder = new StringBuilder("http://26.111.116.51:8092/api/admin/search?");
+            StringBuilder urlBuilder = new StringBuilder(ADMIN_API_URL + "/search?");
 
             if (name != null && !name.isEmpty()) {
                 urlBuilder.append("name=").append(name).append("&");
@@ -479,7 +260,7 @@ public class AuthProxyController {
             @RequestBody String userJson,
             @RequestHeader("Authorization") String authHeader) {
         try {
-            String url = "http://26.111.116.51:8092/api/admin/registerAsAdmin";
+            String url = ADMIN_API_URL + "/registerAsAdmin";
             System.out.println("POST register as admin: " + url);
 
             HttpHeaders headers = new HttpHeaders();
@@ -507,7 +288,7 @@ public class AuthProxyController {
             @RequestBody String userJson,
             @RequestHeader("Authorization") String authHeader) {
         try {
-            String url = "http://26.111.116.51:8092/api/admin/update/" + id;
+            String url = ADMIN_API_URL + "/update/" + id;
             System.out.println("PUT admin update user: " + url);
 
             HttpHeaders headers = new HttpHeaders();
@@ -534,7 +315,7 @@ public class AuthProxyController {
             @PathVariable Long id,
             @RequestHeader("Authorization") String authHeader) {
         try {
-            String url = "http://26.111.116.51:8092/api/admin/delete/" + id;
+            String url = ADMIN_API_URL + "/delete/" + id;
             System.out.println("DELETE admin user: " + url);
 
             HttpHeaders headers = new HttpHeaders();
