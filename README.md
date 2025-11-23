@@ -4,4 +4,8 @@ JavaSite это реализация сайта-библиотеки книг с
 - [JavaLibrary](https://github.com/GigaGitCoder/JavaLibrary)
 - [JavaUsers](https://github.com/GigaGitCoder/JavaUsers)
 
-# Описание...
+# Особенности:
+
+- При первом запуске сервисов и сайта, первого админа следует создать через POST запрос `ip-user-service:8092/api/admin/registerAsAdmin/` с соответствующим body контентом.
+- Запросы из .js файлов проксируются Controller файлами и перенаправляются на ip контейнеров. По надобности стоит поменять ссылки для запросов в Controller файлах.
+- Ошибки пока не имеют четких пояснений ясных для любого пользователя.
