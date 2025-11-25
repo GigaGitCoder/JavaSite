@@ -79,7 +79,7 @@ private static final String USER_SERVICE_URL = "http://user-service:8092";
 - **Architecture:** Microservices
 - **Containerization:** Docker
 
-# Localizations
+## Localizations
 
 - [Русский](./README-files/README_RU.md)
 - [中文](./README-files/README_ZH.md)
